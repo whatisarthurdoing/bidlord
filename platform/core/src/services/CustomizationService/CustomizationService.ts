@@ -115,15 +115,8 @@ export default class CustomizationService extends PubSubService {
     });
   }
 
-  /** This is the preferred getter for all customizations,
-   * getting mode customizations first and otherwise global customizations.
-   *
-   * @param customizationId - the customization id to look for
-   * @param defaultValue - is the default value to return.  Note this value
-   * may have been extended with any customizationType extensions provided,
-   * so you cannot just use `|| defaultValue`
-   * @return A customization to use if one is found, or the default customization,
-   * both enhanced with any customizationType inheritance (see applyType)
+  /** This is the preferred getter, getting mode customizations first and
+   * otherwise global customizations.
    */
   public getCustomization(
     customizationId: string,
@@ -155,17 +148,12 @@ export default class CustomizationService extends PubSubService {
     );
   }
 
-  /**
-   * Applies any inheritance due to UI Type customization.
-   * This will look for customizationType in the customization object
-   * and if that is found, will assign all iterable values from that
-   * type into the new type, allowing default behaviour to be configured.
-   */
+  /** Applies any inheritance due to UI Type customization */
   public applyType(customization: Customization): Customization {
     if (!customization) return customization;
     const { customizationType } = customization;
     if (!customizationType) return customization;
-    const parent = this.getCustomization(customizationType);
+    const parent = this.getModeCustomization(customizationType);
     return parent
       ? Object.assign(Object.create(parent), customization)
       : customization;
