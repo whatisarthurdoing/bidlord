@@ -39,7 +39,7 @@ window.config = {
         thumbnailRendering: 'wadors',
         enableStudyLazyLoad: true,
         supportsFuzzyMatching: false,
-        supportsWildcard: true,
+        supportsWildcard: false,
         staticWado: true,
         singlepart: 'bulkdata,video,pdf',
       },
