@@ -32,6 +32,7 @@ import {
   sortingCriteria,
   seriesSortCriteria,
 } from './sortStudy';
+import splitComma from './splitComma';
 
 // Commented out unused functionality.
 // Need to implement new mechanism for derived displaySets using the displaySetManager.
@@ -69,6 +70,7 @@ const utils = {
   debounce,
   roundNumber,
   downloadCSVReport,
+  splitComma,
 };
 
 export {
@@ -98,6 +100,7 @@ export {
   debounce,
   roundNumber,
   downloadCSVReport,
+  splitComma,
 };
 
 export default utils;
