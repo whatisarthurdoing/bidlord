@@ -106,7 +106,7 @@ export class CommandsManager {
    * @param {String} commandName - Command to find
    * @param {String} [contextName] - Specific command to look in. Defaults to current activeContexts
    */
-  getCommand = (commandName: string, contextName?: string) => {
+  getCommand = (commandName, contextName) => {
     const contexts = [];
 
     if (contextName) {

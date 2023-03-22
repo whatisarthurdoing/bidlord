@@ -10,7 +10,7 @@ import { Enums as cs3DToolsEnums } from '@cornerstonejs/tools';
 import { Types } from '@ohif/core';
 
 import init from './init';
-import getCommandsModule from './commandsModule';
+import commandsModule from './commandsModule';
 import getHangingProtocolModule from './getHangingProtocolModule';
 import ToolGroupService from './services/ToolGroupService';
 import SyncGroupService from './services/SyncGroupService';
@@ -51,7 +51,7 @@ const cornerstoneExtension: Types.Extensions.Extension = {
    */
   id,
 
-  onModeExit: (): void => {
+  onModeExit: () => {
     // Empty out the image load and retrieval pools to prevent memory leaks
     // on the mode exits
     Object.values(cs3DEnums.RequestType).forEach(type => {
@@ -68,10 +68,12 @@ const cornerstoneExtension: Types.Extensions.Extension = {
    *
    * @param configuration.csToolsConfig - Passed directly to `initCornerstoneTools`
    */
-  preRegistration: function (
-    props: Types.Extensions.ExtensionParams
-  ): Promise<void> {
-    const { servicesManager } = props;
+  async preRegistration({
+    servicesManager,
+    commandsManager,
+    configuration = {},
+    appConfig,
+  }) {
     // Todo: we should be consistent with how services get registered. Use REGISTRATION static method for all
     servicesManager.registerService(
       CornerstoneViewportService(servicesManager)
@@ -85,9 +87,8 @@ const cornerstoneExtension: Types.Extensions.Extension = {
       CornerstoneCacheService.REGISTRATION(servicesManager)
     );
 
-    return init.call(this, props);
+    await init({ servicesManager, commandsManager, configuration, appConfig });
   },
-
   getHangingProtocolModule,
   getViewportModule({ servicesManager, commandsManager }) {
     const ExtendedOHIFCornerstoneViewport = props => {
@@ -113,7 +114,13 @@ const cornerstoneExtension: Types.Extensions.Extension = {
       },
     ];
   },
-  getCommandsModule,
+  getCommandsModule({ servicesManager, commandsManager, extensionManager }) {
+    return commandsModule({
+      servicesManager,
+      commandsManager,
+      extensionManager,
+    });
+  },
   getUtilityModule({ servicesManager }) {
     return [
       {

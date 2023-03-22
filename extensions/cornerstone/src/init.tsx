@@ -1,5 +1,6 @@
 import OHIF from '@ohif/core';
 import React from 'react';
+import { ContextMenuMeasurements } from '@ohif/ui';
 
 import * as cornerstone from '@cornerstonejs/core';
 import * as cornerstoneTools from '@cornerstonejs/tools';
@@ -20,11 +21,15 @@ import initWADOImageLoader from './initWADOImageLoader';
 import initCornerstoneTools from './initCornerstoneTools';
 
 import { connectToolsToMeasurementService } from './initMeasurementService';
+import callInputDialog from './utils/callInputDialog';
 import initCineService from './initCineService';
 import interleaveCenterLoader from './utils/interleaveCenterLoader';
 import nthLoader from './utils/nthLoader';
 import interleaveTopToBottom from './utils/interleaveTopToBottom';
-import initContextMenu from './initContextMenu';
+
+const cs3DToolsEvents = Enums.Events;
+
+let CONTEXT_MENU_OPEN = false;
 
 // TODO: Cypress tests are currently grabbing this from the window?
 window.cornerstone = cornerstone;
@@ -37,7 +42,7 @@ export default async function init({
   commandsManager,
   configuration,
   appConfig,
-}: Types.Extensions.ExtensionParams): Promise<void> {
+}) {
   await cs3DInit();
 
   // For debugging e2e tests that are failing on CI
@@ -60,7 +65,6 @@ export default async function init({
   const {
     userAuthenticationService,
     measurementService,
-    customizationService,
     displaySetService,
     uiDialogService,
     uiModalService,
@@ -151,11 +155,117 @@ export default async function init({
   initWADOImageLoader(userAuthenticationService, appConfig);
 
   /* Measurement Service */
-  this.measurementServiceSource = connectToolsToMeasurementService(
+  const measurementServiceSource = connectToolsToMeasurementService(
     servicesManager
   );
 
   initCineService(cineService);
+
+  const _getDefaultPosition = event => ({
+    x: (event && event.currentPoints.client[0]) || 0,
+    y: (event && event.currentPoints.client[1]) || 0,
+  });
+
+  const onRightClick = event => {
+    if (!uiDialogService) {
+      console.warn('Unable to show dialog; no UI Dialog Service available.');
+      return;
+    }
+
+    const onGetMenuItems = defaultMenuItems => {
+      const { element, currentPoints } = event.detail;
+
+      const nearbyToolData = utilities.getAnnotationNearPoint(
+        element,
+        currentPoints.canvas
+      );
+
+      const menuItems = [];
+      if (nearbyToolData && nearbyToolData.metadata.toolName !== 'Crosshairs') {
+        defaultMenuItems.forEach(item => {
+          item.value = nearbyToolData;
+          item.element = element;
+          menuItems.push(item);
+        });
+      }
+
+      return menuItems;
+    };
+
+    CONTEXT_MENU_OPEN = true;
+
+    uiDialogService.dismiss({ id: 'context-menu' });
+    uiDialogService.create({
+      id: 'context-menu',
+      isDraggable: false,
+      preservePosition: false,
+      defaultPosition: _getDefaultPosition(event.detail),
+      content: ContextMenuMeasurements,
+      onClickOutside: () => {
+        uiDialogService.dismiss({ id: 'context-menu' });
+        CONTEXT_MENU_OPEN = false;
+      },
+      contentProps: {
+        onGetMenuItems,
+        eventData: event.detail,
+        onDelete: item => {
+          const { annotationUID } = item.value;
+
+          const uid = annotationUID;
+          // Sync'd w/ Measurement Service
+          if (uid) {
+            measurementServiceSource.remove(uid, {
+              element: item.element,
+            });
+          }
+          CONTEXT_MENU_OPEN = false;
+        },
+        onClose: () => {
+          CONTEXT_MENU_OPEN = false;
+          uiDialogService.dismiss({ id: 'context-menu' });
+        },
+        onSetLabel: item => {
+          const { annotationUID } = item.value;
+
+          const measurement = measurementService.getMeasurement(annotationUID);
+
+          callInputDialog(
+            uiDialogService,
+            measurement,
+            (label, actionId) => {
+              if (actionId === 'cancel') {
+                return;
+              }
+
+              const updatedMeasurement = Object.assign({}, measurement, {
+                label,
+              });
+
+              measurementService.update(
+                updatedMeasurement.uid,
+                updatedMeasurement,
+                true
+              );
+            },
+            false
+          );
+
+          CONTEXT_MENU_OPEN = false;
+        },
+      },
+    });
+  };
+
+  const resetContextMenu = () => {
+    if (!uiDialogService) {
+      console.warn('Unable to show dialog; no UI Dialog Service available.');
+      return;
+    }
+
+    CONTEXT_MENU_OPEN = false;
+
+    uiDialogService.dismiss({ id: 'context-menu' });
+  };
 
   // When a custom image load is performed, update the relevant viewports
   hangingProtocolService.subscribe(
@@ -175,11 +285,24 @@ export default async function init({
     }
   );
 
-  initContextMenu({
-    cornerstoneViewportService,
-    customizationService,
-    commandsManager,
-  });
+  /*
+   * Because click gives us the native "mouse up", buttons will always be `0`
+   * Need to fallback to event.which;
+   *
+   */
+  const contextMenuHandleClick = evt => {
+    const mouseUpEvent = evt.detail.event;
+    const isRightClick = mouseUpEvent.which === 3;
+
+    const clickMethodHandler = isRightClick ? onRightClick : resetContextMenu;
+    clickMethodHandler(evt);
+  };
+
+  // const cancelContextMenuIfOpen = evt => {
+  //   if (CONTEXT_MENU_OPEN) {
+  //     resetContextMenu();
+  //   }
+  // };
 
   const newStackCallback = evt => {
     const { element } = evt.detail;
@@ -214,6 +337,12 @@ export default async function init({
 
   function elementEnabledHandler(evt) {
     const { element } = evt.detail;
+
+    element.addEventListener(
+      cs3DToolsEvents.MOUSE_CLICK,
+      contextMenuHandleClick
+    );
+
     element.addEventListener(EVENTS.CAMERA_RESET, resetCrosshairs);
 
     eventTarget.addEventListener(
@@ -224,6 +353,11 @@ export default async function init({
 
   function elementDisabledHandler(evt) {
     const { element } = evt.detail;
+
+    element.removeEventListener(
+      cs3DToolsEvents.MOUSE_CLICK,
+      contextMenuHandleClick
+    );
 
     element.removeEventListener(EVENTS.CAMERA_RESET, resetCrosshairs);
 

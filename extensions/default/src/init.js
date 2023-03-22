@@ -10,7 +10,7 @@ const metadataProvider = classes.MetadataProvider;
  * @param {Object} servicesManager
  * @param {Object} configuration
  */
-export default function init({ servicesManager, configuration = {} }): void {
+export default function init({ servicesManager, configuration }) {
   const { stateSyncService } = servicesManager.services;
   // Add
   DicomMetadataStore.subscribe(

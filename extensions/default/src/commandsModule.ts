@@ -1,9 +1,5 @@
-import { ServicesManager, Types } from '@ohif/core';
+import { DicomMetadataStore, ServicesManager } from '@ohif/core';
 
-import {
-  ContextMenuController,
-  defaultContextMenu,
-} from './CustomizeableContextMenu';
 import DicomTagBrowser from './DicomTagBrowser/DicomTagBrowser';
 import reuseCachedLayouts from './utils/reuseCachedLayouts';
 import findViewportsByPosition, {
@@ -27,12 +23,8 @@ const isHangingProtocolCommand = command =>
   (command.commandName === 'setHangingProtocol' ||
     command.commandName === 'toggleHangingProtocol');
 
-const commandsModule = ({
-  servicesManager,
-  commandsManager,
-}: Types.Extensions.ExtensionParams): Types.Extensions.CommandsModule => {
+const commandsModule = ({ servicesManager, commandsManager }) => {
   const {
-    customizationService,
     measurementService,
     hangingProtocolService,
     uiNotificationService,
@@ -42,60 +34,7 @@ const commandsModule = ({
     toolbarService,
   } = (servicesManager as ServicesManager).services;
 
-  // Define a context menu controller for use with any context menus
-  const contextMenuController = new ContextMenuController(
-    servicesManager,
-    commandsManager
-  );
-
   const actions = {
-    /**
-     * Show the context menu.
-     * @param options.menuId defines the menu name to lookup, from customizationService
-     * @param options.defaultMenu contains the default menu set to use
-     * @param options.element is the element to show the menu within
-     * @param options.event is the event that caused the context menu
-     * @param options.selectorProps is the set of selection properties to use
-     */
-    showContextMenu: options => {
-      const {
-        menuCustomizationId,
-        element,
-        event,
-        selectorProps,
-        defaultPointsPosition = [],
-      } = options;
-
-      const optionsToUse = { ...options };
-
-      if (menuCustomizationId) {
-        Object.assign(
-          optionsToUse,
-          customizationService.get(menuCustomizationId, defaultContextMenu)
-        );
-      }
-
-      // TODO - make the selectorProps richer by including the study metadata and display set.
-      const { protocol, stage } = hangingProtocolService.getActiveProtocol();
-      optionsToUse.selectorProps = {
-        event,
-        protocol,
-        stage,
-        ...selectorProps,
-      };
-
-      contextMenuController.showContextMenu(
-        optionsToUse,
-        element,
-        defaultPointsPosition
-      );
-    },
-
-    /** Close a context menu currently displayed */
-    closeContextMenu: () => {
-      contextMenuController.closeContextMenu();
-    },
-
     displayNotification: ({ text, title, type }) => {
       uiNotificationService.show({
         title: title,
@@ -397,12 +336,6 @@ const commandsModule = ({
   };
 
   const definitions = {
-    showContextMenu: {
-      commandFn: actions.showContextMenu,
-    },
-    closeContextMenu: {
-      commandFn: actions.closeContextMenu,
-    },
     clearMeasurements: {
       commandFn: actions.clearMeasurements,
       storeContexts: [],
