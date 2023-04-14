@@ -53,6 +53,7 @@ const SegmentationGroupTable = ({
   setRenderFill,
   setRenderInactiveSegmentations,
   setRenderOutline,
+  setTextInput,
 }) => {
   return (
     <div className="flex flex-col min-h-0 font-inter font-[300]">
@@ -82,29 +83,33 @@ const SegmentationGroupTable = ({
               activeSegmentIndex,
             } = segmentation;
             return (
-              <SegmentationGroup
-                id={id}
-                key={id}
-                label={label}
-                isMinimized={isMinimized[id]}
-                segments={segments}
-                showAddSegment={showAddSegment}
-                segmentCount={segmentCount}
-                isActive={isActive}
-                isVisible={isVisible}
-                onSegmentColorClick={onSegmentColorClick}
-                onSegmentationClick={() => onSegmentationClick(id)}
-                activeSegmentIndex={activeSegmentIndex}
-                onToggleMinimizeSegmentation={onToggleMinimizeSegmentation}
-                onSegmentationEdit={onSegmentationEdit}
-                onSegmentationDelete={onSegmentationDelete}
-                onSegmentClick={onSegmentClick}
-                onSegmentEdit={onSegmentEdit}
-                onToggleSegmentVisibility={onToggleSegmentVisibility}
-                onToggleSegmentationVisibility={onToggleSegmentationVisibility}
-                onSegmentAdd={onSegmentAdd}
-                showSegmentDelete={false}
-              />
+              <div key={id}>
+                <SegmentationGroup
+                  id={id}
+                  label={label}
+                  isMinimized={isMinimized[id]}
+                  segments={segments}
+                  showAddSegment={showAddSegment}
+                  segmentCount={segmentCount}
+                  isActive={isActive}
+                  isVisible={isVisible}
+                  onSegmentColorClick={onSegmentColorClick}
+                  onSegmentationClick={() => onSegmentationClick(id)}
+                  activeSegmentIndex={activeSegmentIndex}
+                  onToggleMinimizeSegmentation={onToggleMinimizeSegmentation}
+                  onSegmentationEdit={onSegmentationEdit}
+                  onSegmentationDelete={onSegmentationDelete}
+                  onSegmentClick={onSegmentClick}
+                  onSegmentEdit={onSegmentEdit}
+                  onToggleSegmentVisibility={onToggleSegmentVisibility}
+                  onToggleSegmentationVisibility={
+                    onToggleSegmentationVisibility
+                  }
+                  onSegmentAdd={onSegmentAdd}
+                  showSegmentDelete={false}
+                  setTextInput={setTextInput}
+                />
+              </div>
             );
           })}
       </div>
@@ -132,6 +137,7 @@ SegmentationGroupTable.propTypes = {
   onToggleVisibility: PropTypes.func.isRequired,
   onToggleVisibilityAll: PropTypes.func.isRequired,
   segmentationConfig: PropTypes.object,
+  setTextInput: PropTypes.func.isRequired,
 };
 
 SegmentationGroupTable.defaultProps = {
@@ -164,6 +170,7 @@ SegmentationGroupTable.defaultProps = {
   setRenderFill: () => {},
   setRenderInactiveSegmentations: () => {},
   setRenderOutline: () => {},
+  setTextInput: () => {},
 };
 
 export default SegmentationGroupTable;

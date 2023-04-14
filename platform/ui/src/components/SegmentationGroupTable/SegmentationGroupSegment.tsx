@@ -16,6 +16,7 @@ const SegmentItem = ({
   onEdit,
   onDelete,
   onColor,
+  setTextInput,
   onToggleVisibility,
   onToggleLocked,
 }) => {
@@ -43,6 +44,8 @@ const SegmentItem = ({
       onClick={e => {
         e.stopPropagation();
         onClick(segmentationId, segmentIndex);
+        //FIXME:
+        setTextInput(label);
       }}
       role="button"
       tabIndex={0}
@@ -97,7 +100,7 @@ const SegmentItem = ({
               onColor(segmentationId, segmentIndex);
             }}
           />
-          <div className="">{label}</div>
+          <div className="SegmentLabel">{label}</div>
         </div>
         {/* with faded background */}
         <div className="absolute right-0 bg-black/15 rounded-lg pr-[7px]">
@@ -233,6 +236,7 @@ SegmentItem.propTypes = {
   onDelete: PropTypes.func.isRequired,
   onToggleVisibility: PropTypes.func.isRequired,
   onToggleLocked: PropTypes.func,
+  setTextInput: PropTypes.func.isRequired,
 };
 
 SegmentItem.defaultProps = {

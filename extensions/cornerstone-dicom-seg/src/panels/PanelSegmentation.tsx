@@ -89,7 +89,7 @@ export default function PanelSegmentation({
     return toolGroupIds;
   };
 
-  const onSegmentClick = (segmentationId, segmentIndex) => {
+  const onSegmentClick = (segmentationId: string, segmentIndex) => {
     segmentationService.setActiveSegmentForSegmentation(
       segmentationId,
       segmentIndex
@@ -267,6 +267,8 @@ export default function PanelSegmentation({
               value
             )
           }
+          //TODO: Anpassen??
+          setTextInput={setTextInput}
         />
       ) : null}
     </div>

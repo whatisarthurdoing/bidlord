@@ -5,6 +5,7 @@ import Dropdown from '../Dropdown';
 import classnames from 'classnames';
 import Icon from '../Icon';
 import IconButton from '../IconButton';
+import TextInputGroup from './TextInputGroup';
 
 const AddNewSegmentRow = ({
   id,
@@ -147,6 +148,7 @@ const SegmentationGroup = ({
   onSegmentationConfigChange,
   onSegmentationDelete,
   onSegmentEdit,
+  setTextInput,
 }) => {
   return (
     <div className="flex flex-col flex-auto min-h-0">
@@ -201,11 +203,13 @@ const SegmentationGroup = ({
                       showSegmentDelete={showSegmentDelete}
                       onColor={onSegmentColorClick}
                       onToggleVisibility={onToggleSegmentVisibility}
+                      setTextInput={setTextInput}
                     />
                   </div>
                 );
               })}
           </div>
+          <TextInputGroup />
         </div>
       )}
     </div>
@@ -239,6 +243,7 @@ SegmentationGroup.propTypes = {
   onSegmentationConfigChange: PropTypes.func.isRequired,
   onSegmentationDelete: PropTypes.func.isRequired,
   onSegmentEdit: PropTypes.func.isRequired,
+  setTextInput: PropTypes.func.isRequired,
 };
 
 SegmentationGroup.defaultProps = {
@@ -265,6 +270,7 @@ SegmentationGroup.defaultProps = {
   onSegmentationConfigChange: () => {},
   onSegmentationDelete: () => {},
   onSegmentEdit: () => {},
+  setTextInput: () => {},
 };
 
 export default SegmentationGroup;
