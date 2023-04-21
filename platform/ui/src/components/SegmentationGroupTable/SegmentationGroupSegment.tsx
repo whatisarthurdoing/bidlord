@@ -44,8 +44,6 @@ const SegmentItem = ({
       onClick={e => {
         e.stopPropagation();
         onClick(segmentationId, segmentIndex);
-        //FIXME:
-        setTextInput(label);
       }}
       role="button"
       tabIndex={0}

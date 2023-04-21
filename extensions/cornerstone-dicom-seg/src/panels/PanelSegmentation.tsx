@@ -88,12 +88,30 @@ export default function PanelSegmentation({
 
     return toolGroupIds;
   };
+  //BUG:
+  const setTextInput = segmentations => {
+    segmentations.map((segmentation, index) => {
+      const {
+        id,
+        label,
+        displayText = [],
+        segmentCount,
+        segments,
+        isVisible,
+        isActive,
+        activeSegmentIndex,
+      } = segmentation;
+      return label;
+    });
+  };
 
   const onSegmentClick = (segmentationId: string, segmentIndex) => {
     segmentationService.setActiveSegmentForSegmentation(
       segmentationId,
       segmentIndex
     );
+
+    setTextInput(segmentations);
 
     const toolGroupIds = getToolGroupIds(segmentationId);
 
@@ -214,6 +232,7 @@ export default function PanelSegmentation({
           onToggleSegmentVisibility={onToggleSegmentVisibility}
           onToggleSegmentationVisibility={onToggleSegmentationVisibility}
           onToggleMinimizeSegmentation={onToggleMinimizeSegmentation}
+          setTextInput={setTextInput}
           segmentationConfig={{
             initialConfig: initialSegmentationConfigurations,
             usePercentage: true,
@@ -267,8 +286,6 @@ export default function PanelSegmentation({
               value
             )
           }
-          //TODO: Anpassen??
-          setTextInput={setTextInput}
         />
       ) : null}
     </div>

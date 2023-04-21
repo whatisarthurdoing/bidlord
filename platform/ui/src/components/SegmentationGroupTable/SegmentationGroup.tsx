@@ -209,7 +209,7 @@ const SegmentationGroup = ({
                 );
               })}
           </div>
-          <TextInputGroup />
+          <TextInputGroup label={setTextInput} />
         </div>
       )}
     </div>
